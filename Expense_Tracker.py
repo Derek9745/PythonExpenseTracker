@@ -50,3 +50,6 @@ if choice == "1":
     expense = Expense(date, description, amount)
     tracker.add_expense(expense)
 
+else:
+    
+
