@@ -1,5 +1,5 @@
 class Expense:
-    def __init__(self, date,description, amount): # type: ignore
+    def __init__(self, date,description, amount):
         self.date = date
         self.description = description
         self.amount = amount
@@ -41,15 +41,28 @@ def main():
         print("4. Total Expenses")
         print("5. Exit")
 
-choice = input("Enter your choice 1-5")
+        choice = input("Enter your choice 1-5: ")
 
-if choice == "1":
-    date = input("Enter the date (YYYY-MM-DD): ")
-    description = input("Enter the description : ")
-    amount = float(input("Enter the amount: "))
-    expense = Expense(date, description, amount)
-    tracker.add_expense(expense)
+        if choice == "1":
+            date = input("Enter the date (YYYY-MM-DD): ")
+            description = input("Enter the description : ")
+            amount = float(input("Enter the amount: "))
+            expense = Expense(date, description, amount)
+            tracker.add_expense(expense)
+            print("Expense added Successfully.")
+        elif choice == 2:
+            index = int(input("Enter the expense index to remove: ")) - 1
+            tracker.remove_expense(index)
+        elif choice == 3:
+            tracker.view_expenses()
+        elif choice == 4:
+            tracker.total_expenses()
+        elif choice == 5:
+            print("Goodbye!")
+            break
 
-else:
+    
+
+
     
 
