@@ -1,8 +1,23 @@
-
 from tkinter import *
 from tkinter import ttk
 import tkinter
-from tkcalendar import Calendar
+from tkinter import messagebox
+import openpyxl
+from datetime import datetime
+
+
+def load_excel():
+        path = "C:/Users/hehnd/OneDrive/Desktop/Python/PythonExpenseTracker/Expense_Data.xlsx"
+        workbook = openpyxl.load_workbook(path)
+        sheet = workbook.active
+        list_values = list(sheet.values)
+        print(list_values)
+        for col_name in list_values[0]:
+            col_name = str(col_name)
+            treeview.heading(col_name, text=col_name)
+
+        for value_tuple in list_values[1:]:
+            treeview.insert('', tkinter.END, values=value_tuple)
 
 
 class Expense:
@@ -16,26 +31,49 @@ class ExpenseTracker:
         self.expenses = []
 
     def add_expense(self):
-        date = date_entry.get()   
+        while True:
+            try:
+                date = date_entry.get()
+                datetime.strptime(date, '%m/%d/%Y')
+                break
+            except ValueError:
+                retry = messagebox.askretrycancel(title="Input Error", message = "Invalid input. Please enter a valid date input")
+                if not retry:
+                    return  
+                 
         description = name_entry.get()
-        amount = float(amount_entry.get())
+
+        while True:
+            try:
+                amount = float(amount_entry.get())
+                break
+            except ValueError:
+                retry = messagebox.askretrycancel(title="Input Error", message = "Invalid input. Please enter a valid numerical input")
+                if not retry:
+                    return 
+
         expense = Expense(date, description, amount)
         self.expenses.append(expense)
         treeview.insert("", tkinter.END, text=f"Expense Name: {expense.description}", values = (expense.date,expense.description,expense.amount))
     
 
-    def remove_expense(self,index):
-        if 0 <= index < len(self.expenses):
-            del self.expenses[index]
-          
-            print("Expense removed successfully.")
+    def remove_expense(self):
+        selected_item = treeview.selection() 
+        if selected_item:  
+            treeview.delete(selected_item)
         else:
-            print("Error, Invalid Input Parameter")
-
-   
+            messagebox.askretrycancel(title="Input Error", message = "No Row Selected")
+       
+        
     def total_expenses(self):
         total = sum(expense.amount for expense in self.expenses)
         print(f"Total Expenses: $ {total:.2f}")
+
+    def view_spending_report(self):
+        return
+    
+    
+
 
 Window = Tk()
 style = ttk.Style(Window)
@@ -66,8 +104,9 @@ name_entry.insert(0,"Name")
 name_entry.bind("<FocusIn>", lambda e: name_entry.delete("0","end"))
 name_entry.grid(row = 0,column = 0, padx = 5, pady = 5,sticky="ew")
 
-date_entry = ttk.Spinbox(widgets_frame, from_= 18, to = 100)
+date_entry = ttk.Entry(widgets_frame)
 date_entry.insert(0,"Date")
+date_entry.bind("<FocusIn>", lambda e: date_entry.delete("0","end"))
 date_entry.grid(row=1, column = 0, padx = 5, pady = 5,sticky = "ew")
 
 amount_entry = ttk.Entry(widgets_frame)
@@ -80,13 +119,13 @@ tracker = ExpenseTracker()
 insert_button = ttk.Button(widgets_frame, text = "Insert", command=tracker.add_expense)
 insert_button.grid(row=3, column = 0, padx = 5, pady = 5,sticky = "nsew")
 
-delete_button = ttk.Button(widgets_frame_2, text = "Delete", command = tracker.remove_expense)
+delete_button = ttk.Button(widgets_frame_2, text = "Delete Selected Row", command = tracker.remove_expense)
 delete_button.grid(row=0, column = 0, padx = 5, pady = 5,sticky = "nsew")
 
-view_data_button = ttk.Button(widgets_frame_3, text = "View Data")
+view_data_button = ttk.Button(widgets_frame_3, text = "View Spending Report", command = tracker.view_spending_report)
 view_data_button.grid(row=0, column = 0, padx = 5, pady = 5,sticky = "nsew")
 
-load_data_button = ttk.Button(widgets_frame_4, text = "Load Excel Datasheet")
+load_data_button = ttk.Button(widgets_frame_4, text = "Load Excel Datasheet", command = load_excel)
 load_data_button.grid(row=0, column = 0, padx = 5, pady = 5,sticky = "nsew")
 
 
@@ -96,16 +135,15 @@ treeFrame.grid(row=0,column = 1, pady = 10)
 treeScroll = ttk.Scrollbar(treeFrame)
 treeScroll.pack(side="right", fill = "y")
 
-treeview = ttk.Treeview(treeFrame,column=("c1","c2","c3","c4"),show= "headings",height= 8)
+treeview = ttk.Treeview(treeFrame,column=("Date","Description","Amount"),show= "headings",height= 8)
 
-treeview.column("# 1",anchor=CENTER)
-treeview.heading("# 1", text= "Date")
-treeview.column("# 2",anchor=CENTER)
-treeview.heading("# 2", text= "Description")
-treeview.column("# 3",anchor=CENTER)
-treeview.heading("# 3", text= "Amount")
-treeview.column("# 4",anchor=CENTER)
-treeview.heading("# 4", text= "Action")
+treeview.column("Date",anchor=CENTER)
+treeview.heading("Date", text= "Date")
+treeview.column("Description",anchor=CENTER)
+treeview.heading("Description", text= "Description")
+treeview.column("Amount",anchor=CENTER)
+treeview.heading("Amount", text= "Amount")
+
 
 treeview.pack()
 treeScroll.config(command = treeview.yview)
